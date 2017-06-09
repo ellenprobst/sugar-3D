@@ -1,31 +1,69 @@
-// create scene
-var scene = new THREE.Scene();
-// variable for our mesh object
+
+// variable for  mesh object
+var renderer, camera, scene;
 var sphere;
 var cone;
 var cones = [];
-var mesh;
-var mainGroup = new THREE.Group();	
+var cupcakes = [];
+var coneGroup = new THREE.Group();	
 var targetRotation = 0;
-// set up ortho camera
-var camera = new THREE.OrthographicCamera(window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 500, 1000 );
-camera.zoom = 1;
-camera.updateProjectionMatrix();
+var mouseX = 0;
+var mouseY= 0;
 
-// add light 
-var ambientLight = new THREE.AmbientLight('#6b4808', 1);
-scene.add(ambientLight);
+init();
 
-var light = new THREE.PointLight( 0xffffff, 1.5, 1500);
-light.position.set( 0, 500, 500 );
-scene.add( light );
+function init(){
+	// set up ortho camera
 
-// create renderer
-var renderer = new THREE.WebGLRenderer({alpha: true});
-renderer.setSize(window.innerWidth, window.innerHeight);
+	camera = new THREE.OrthographicCamera(window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 2000, 1000 );
+	camera.zoom = 1.5;
+	camera.updateProjectionMatrix();
 
-// append it to the DOM
-document.body.appendChild(renderer.domElement);
+
+	// create scene
+	scene = new THREE.Scene();
+
+
+	// add light 
+	var ambientLight = new THREE.AmbientLight(0xffffbb, .6);
+	scene.add(ambientLight);
+
+	var light = new THREE.PointLight( 0xffffff, 1.5, 1500);
+	light.position.set( 0, 500, 500 );
+	scene.add( light );
+	var lightTwo = new THREE.PointLight( 0xffffff, 1.5, 1500);
+	lightTwo.position.set( 500, 500, 500 );
+	scene.add( lightTwo );
+
+	// create renderer
+	renderer = new THREE.WebGLRenderer({alpha: true});
+	renderer.setSize(window.innerWidth, window.innerHeight);
+
+	// append it to the DOM
+	document.body.appendChild(renderer.domElement);
+
+	var loader = new THREE.JSONLoader();
+	loader.load('./cupcake-lowpoly.json', generateMesh );
+};
+
+
+
+function generateMesh(geometry, material){
+	geometry.computeVertexNormals();
+    var cupcake = new THREE.Mesh(geometry, material);
+    
+  //      	cupcake.position.x = randBetween(-320,300);
+		cupcake.position.y = -100;
+		cupcake.position.Z = randBetween(-100,800);
+		cupcake.rotation.z = randBetween(.0, .25);
+		
+		cupcake.scale.x = cupcake.scale.y = cupcake.scale.z = 70;
+		
+		cupcake.rotateAt = randBetween(0.01, 0.03);	
+
+		scene.add(cupcake);
+		cupcakes.push( cupcake )
+}
 
 // create function that returns unique ice cream
 var ice_choc = function(group) {
@@ -48,30 +86,30 @@ var ice_straw = function(group) {
 
 	var textureLoader = new THREE.TextureLoader();
 	textureLoader.crossOrigin = true;
-	textureLoader.load('./assets/ice.jpg', function(texture) {
+	textureLoader.load('./assets/ice.jpg', addTexture )
+	
+	function addTexture(texture) {
 		//  repeat pattern
-	texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
+		texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
 
-		// assign texture via MeshBasicMaterial
+			// assign texture via MeshBasicMaterial
+		var material = new THREE.MeshLambertMaterial({			
+				map: texture,
+				side: THREE.DoubleSide,
+				blending: THREE.AdditiveBlending,
+				reflectivity: 0
+			});
 
-	var material = new THREE.MeshLambertMaterial({			
-			map: texture,
-			side: THREE.DoubleSide,
-			blending: THREE.AdditiveBlending,
-			reflectivity: 0
-		});
+		var geometry = new THREE.SphereGeometry(25,16,16);
+		sphere = new THREE.Mesh( geometry, material );
+		sphere.position.y = 25;
+		sphere.castShadow = true
 
-	var geometry = new THREE.SphereGeometry(25,16,16);
-	sphere = new THREE.Mesh( geometry, material );
-	sphere.position.y = 25;
-	sphere.castShadow = true
-
-	group.add( sphere );
-	});
+		group.add( sphere );
+	};
 }
 
 var cone = function(group){	
-
 	var textureLoader = new THREE.TextureLoader();
 	textureLoader.crossOrigin = true;
 	textureLoader.load('./assets/wafer3.jpg', function(texture) {
@@ -98,19 +136,6 @@ var cone = function(group){
 	});
 }
 
-var donut = function() {
-	var geometry = new THREE.TorusGeometry( 250, 75, 16, 100 );
-	var material = new THREE.MeshPhongMaterial( { 
-		// wireframe: true, 
-		color: 0x3e1c12,
-		specular: 0x3e3535
-		} );
-	var torus = new THREE.Mesh( geometry, material );
-	scene.add( torus );
-	torus.position.z = 100;
-	torus.rotation.x = 280/ ( Math.PI );
-}
-donut();
 function randBetween(min, max) {
 	return (Math.random() * (max - min)) + min;
 }
@@ -119,63 +144,53 @@ function createGroup(ice) {
 	var group = new THREE.Group();	
 	var x = randBetween(-520,500),
 		y = randBetween(-320,320),
-		z = randBetween(-420,20);
+		z = randBetween(-1000,-300);
 
 	group.position.set(x,y,z);
-	group.castShadow = true
+	group.castShadow = true;
+	group.scale.x = group.scale.y = group.scale.z = .5;
 	
-	ice(group)
-	
+	ice(group)	
 	cone(group)
 	
 	//randomize the rotation speed 
     group.rotateAt = randBetween(0.01, 0.03);	
     cones.push(group);
-    mainGroup.add(group);
+    coneGroup.add(group);
 }
 
-
-for (var i = 0; i <= 15; i++) {
-	createGroup(ice_straw)
-	createGroup(ice_choc)
+for (var i = 0; i <= 25; i++) {
+	createGroup(ice_straw);
+	createGroup(ice_choc);
 }
 
-scene.add( mainGroup );
+scene.add( coneGroup );
 
+document.addEventListener('mousemove', onMouseMove, false);
 
-var mouseX = 0,
-      mouseY = 0,
-      windowHalfX = window.innerWidth / 2,
-      windowHalfY = window.innerHeight / 2;
-document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+// Follows the mouse event
+function onMouseMove(event) {
 
+event.preventDefault();
+mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+mouseY = - (event.clientY / window.innerHeight) * 2 + 1;
+};
 
-function onDocumentMouseMove(event) {
-  	mouseX = event.clientX - windowHalfX;
-    mouseY = event.clientY - windowHalfY;
-    console.log(event)
-    // targetRotation = targetRotation  * 2;
-  }
-
-console.log(cones)
 function render(){
 	requestAnimationFrame( render );
-	// camera.lookAt( scene.position );
-	// camera.position.x += ( mouseX - camera.position.x ) * .05;
-	// camera.position.y += ( - mouseY + 200 - camera.position.y ) * .05;
-	// camera.lookAt( scene.position );
-
 	cones.forEach((mesh)=>{
 		mesh.rotation.x += mesh.rotateAt;
 		mesh.rotation.y += mesh.rotateAt;
 		mesh.rotation.z += mesh.rotateAt;
 	});
-
-	 // mainGroup.rotation.y += ( targetRotation - mainGroup.rotation.y ) * .01;
-
+	
+	cupcakes.forEach((mesh)=>{
+		mesh.rotation.y = mouseX * 5;
+		mesh.rotation.x = mouseY ;
+	});
 	renderer.render( scene,camera );
 }
 
-console.log(cones)
 render();
+
 

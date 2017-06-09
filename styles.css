@@ -3,6 +3,12 @@ body {
 	width: 100vw;
 	height: 100vh;
 	background: linear-gradient(to bottom, #614385, #516395);
+	background-image: linear-gradient(to right, #ff8177 0%, #ff867a 0%, #ff8c7f 21%, #f99185 52%, #cf556c 78%, #b12a5b 100%);
+	background-image: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+	background-image: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+	background-image: linear-gradient(to right, #e4afcb 0%, #b8cbb8 0%, #b8cbb8 0%, #e2c58b 30%, #c2ce9c 64%, #7edbdc 100%);
+	background-image: linear-gradient(to right, #92fe9d 0%, #00c9ff 100%);
+	background-image: linear-gradient(to right, #00dbde 0%, #fc00ff 100%);
 }
 canvas {
 	width: 100%;
